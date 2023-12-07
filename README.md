@@ -1,9 +1,10 @@
 # OpenTelemetry Grafana Dashboard Catalog
 
-This project creates a dashboard containing panels for all metrics defined in
-the OpenTelemetry semantic conventions. This can help you to determine which
-standardized OpenTelemetry metrics are emitted from you application, futhermore
-you can copy and customize panels for you usage scenarios.
+This project dynamically creates a dashboard containing panels for all metrics
+defined in the OpenTelemetry semantic conventions. This can help you to
+determine which standardized OpenTelemetry metrics are emitted from your
+application, futhermore you can copy panels from the catalog and customize them
+for your own use.
 
 ## Requirements
 
@@ -28,7 +29,7 @@ python3 main.py > dashboard-catalog.json
    select the file created in Step 1. As input, select a Prometheus data source
    that contains OpenTelemetry metrics. Then click "Import".
 
-4. The imported dashboard then shows distinct section for the semantic
+4. The imported dashboard then shows distinct sections for the semantic
    convention areas, with panels for all the metrics defined by OpenTelemetry
    semantic conventions. Data will show up for metrics that are available in the
    selected data source.
