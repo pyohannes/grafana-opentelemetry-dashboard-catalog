@@ -49,6 +49,6 @@ class DashboardMetric(object):
             extension = ""
             if self.instrument == "histogram":
                 extension = "_sum"
-            target["expr"] = self.name.replace('.', '_') + extension
+            target["expr"] = "avg(%s)" % (self.name.replace('.', '_') + extension)
 
         return jsondata
