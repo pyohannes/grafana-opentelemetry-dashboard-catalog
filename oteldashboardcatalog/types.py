@@ -34,17 +34,26 @@ class DashboardGroup(object):
         return jsondata
 
 class DashboardMetric(object):
+
+    unit_map = {
+        "By": "bytes"
+    }
+
     def __init__(self, name, instrument, unit, description):
         self.name = name
         self.instrument = instrument
         self.unit = unit
         self.description = description
 
+        if self.unit in self.unit_map:
+            self.unit = self.unit_map[self.unit]
+
     def to_json(self):
         jsondata = copy.deepcopy(templates.METRIC)
 
         jsondata["description"] = self.description
         jsondata["title"] = self.name
+        jsondata["fieldConfig"]["defaults"]["unit"] = self.unit
         for target in jsondata["targets"]:
             extension = ""
             if self.instrument == "histogram":
