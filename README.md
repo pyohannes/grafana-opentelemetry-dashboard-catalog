@@ -9,6 +9,7 @@ you can copy and customize panels for you usage scenarios.
 
 * Python 3
 * Git
+* OpenTelemetry metrics available in Grafana in a Prometheus data source
 
 ## Usage
 
