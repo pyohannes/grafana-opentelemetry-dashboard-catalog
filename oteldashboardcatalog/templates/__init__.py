@@ -177,3 +177,29 @@ ROW = {
     "type": "row",
     "collapsed": True
 }
+
+SECTION_HEADER = {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_GRAFANACLOUD-JOHANNESTAX-PROM}"
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 95,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": False,
+          "showMiniMap": False
+        },
+        "content": "# FAAS",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.3.0-64167",
+      "title": "OpenTelemetry Semantic Conventions",
+      "type": "text"
+}
