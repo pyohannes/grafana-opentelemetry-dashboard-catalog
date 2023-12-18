@@ -13,4 +13,5 @@ if __name__ == "__main__":
         for source in sources:
             dashboard.groups.extend(source.resolve().groups)
 
-    print(json.dumps(dashboard.to_json(), indent=4))
+    jsondata, position = dashboard.to_json()
+    print(json.dumps(jsondata, indent=2))

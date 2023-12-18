@@ -97,7 +97,7 @@ METRIC = {
   ],
   "title": "%(name)s",
   "type": "timeseries"
-}
+}, 8
 
 DASHBOARD = {
   "__inputs": [
@@ -137,7 +137,7 @@ DASHBOARD = {
         "builtIn": 1,
         "datasource": {
           "type": "grafana",
-          "uid": "-- Grafana --"
+          "uid": "${DS_INPUT}"
         },
         "enable": True,
         "hide": True,
@@ -170,18 +170,24 @@ DASHBOARD = {
   "uid": "e601c316-7813-498e-a4c7-b72854961a62",
   "version": 1,
   "weekStart": ""
-}
+}, None
 
 ROW = {
     "title": "%(row_title)s",
     "type": "row",
-    "collapsed": True
-}
+    "collapsed": True,
+    "gridPos": {
+      "h": 1,
+      "w": 24,
+      "x": 0,
+      "y": 0
+    },
+  }, 1
 
 SECTION_HEADER = {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_GRAFANACLOUD-JOHANNESTAX-PROM}"
+        "uid": "${DS_INPUT}"
       },
       "gridPos": {
         "h": 3,
@@ -202,4 +208,87 @@ SECTION_HEADER = {
       "pluginVersion": "10.3.0-64167",
       "title": "OpenTelemetry Semantic Conventions",
       "type": "text"
-}
+    }, 3
+
+METRIC_AVAILABLE = {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_INPUT}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "index": 0,
+                  "text": "not available"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": None
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 2,
+        "x": 0,
+        "y": 3 
+      },
+      "id": 252,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": False
+        },
+        "textMode": "auto",
+        "wideLayout": True
+      },
+      "pluginVersion": "10.3.0-64167",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_INPUT}"
+          },
+          "disableTextWrap": False,
+          "editorMode": "builder",
+          "expr": "count(aspnetcore_routing_match_attempts)",
+          "fullMetaSearch": False,
+          "includeNullMetadata": True,
+          "instant": False,
+          "legendFormat": "__auto",
+          "range": True,
+          "refId": "A",
+          "useBackend": False
+        }
+      ],
+      "title": " ",
+      "transparent": True,
+      "type": "stat"
+    }, 2

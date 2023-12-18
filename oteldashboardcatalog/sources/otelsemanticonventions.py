@@ -1,60 +1,12 @@
+import glob
 import os
 import shutil
 import subprocess
 import tempfile
 import yaml
 
+from .opentelemetry.semconv.model import semantic_convention, semantic_attribute
 from ..types import Dashboard, DashboardGroup, DashboardMetric, MetricAttribute
-
-def _parse_metric(metricyaml):
-    attributes = {}
-    for attr in metricyaml.get("attributes", []):
-        requirement_level = attr.get("requirement_level")
-        try:
-            if requirement_level["conditionally_required"]:
-                requirement_level = "required"
-        except:
-            pass
-        print(requirement_level)
-        if "ref" in attr:
-            attributes.setdefault(requirement_level, []).append(attr["ref"])
-        elif "id" in attr:
-            attributes.setdefault(requirement_level, []).append(attr["id"])
-    return DashboardMetric(
-            metricyaml["metric_name"], 
-            metricyaml["instrument"], 
-            metricyaml["unit"], 
-            metricyaml["brief"],
-            attributes)
-
-def _parse_attributes(groupyaml):
-    prefix = groupyaml.get("prefix", "")
-    attrs = []
-    for attryaml in groupyaml.get("attributes", []):
-        if not "id" in attryaml:
-            continue
-        name = attryaml["id"]
-        if prefix:
-            name = "%s.%s" % (prefix, name)
-        attrs.append(MetricAttribute(
-            name,
-            groupyaml["type"],
-            groupyaml["brief"],
-            groupyaml.get("stability", None)))
-    return attrs
-
-def _get_all_yaml_files(directory):
-    dirs = [directory]
-
-    while dirs:
-        d = dirs.pop()
-        for fname in os.listdir(d):
-            full_path = os.path.join(d, fname)
-            if os.path.isdir(full_path):
-                dirs.append(full_path)
-                continue
-            if full_path.endswith(".yaml"):
-                yield full_path
 
 def resolve():
     try:
@@ -65,30 +17,44 @@ def resolve():
                 cwd=tmpdir,
                 stdout=subprocess.DEVNULL)
 
-        metric_definition_dir = os.path.join(tmpdir, "model")
-        metric_groups = []
-        attributes = []
+        yaml_files = set(
+            glob.glob(f"{tmpdir}/model/**/*.yaml", recursive=True)
+        ).union(set(glob.glob(f"{tmpdir}/model/**/*.yml", recursive=True)))
 
-        for fname in _get_all_yaml_files(metric_definition_dir):
-            metrics = []
+        semconv = semantic_convention.SemanticConventionSet(False)
 
-            with open(fname, "r") as f:
-                metric_definition = yaml.safe_load(f)
+        for file in yaml_files:
+            semconv.parse(file)
 
-                for group in metric_definition["groups"]:
-                    if group["type"] == "metric":
-                        metrics.append(_parse_metric(group))
-                    elif group["type"] == "attribute_group":
-                        attributes.extend(_parse_attributes(group))
+        semconv.finish()
 
-            if metrics:
-                metric_group_name = os.path.splitext(os.path.basename(fname))[0]
-                metric_group_name = metric_group_name.replace("-metrics", "")
-                metric_groups.append(DashboardGroup(
-                    "OpenTelemetry Semantic Conventions", 
-                    metric_group_name.upper(), 
-                    metrics))
+        if semconv.has_error():
+            raise SyntaxError()
 
-        return Dashboard("OpenTelemetry semantic conventions", metric_groups)
+        metric_groups = {}
+
+        for name, model in semconv.models.items():
+            if isinstance(model, semantic_convention.MetricSemanticConvention):
+                group_name = os.path.splitext(os.path.basename(model.sourcefile))[0]
+                group_name = group_name.replace("-metrics", "")
+
+                if not group_name in metric_groups:
+                    metric_groups[group_name] = DashboardGroup(
+                        "OpenTelemetry Semantic Conventions", 
+                        group_name.upper(), 
+                        [])
+
+                required_attributes = [ attr.fqn for attr in model.attributes if attr.requirement_level and attr.requirement_level.value == semantic_attribute.RequirementLevel.REQUIRED.value ]
+
+                metric = DashboardMetric(
+                    model.metric_name,
+                    model.instrument, 
+                    model.unit, 
+                    model.brief,
+                    required_attributes)
+
+                metric_groups[group_name].metrics.append(metric)
+
+        return Dashboard("OpenTelemetry semantic conventions", sorted(metric_groups.values(), key=lambda group: group.subtitle))
     finally:
         shutil.rmtree(tmpdir)
